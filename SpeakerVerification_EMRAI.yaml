@@ -1,0 +1,9 @@
+audio:
+  target_path: '/home/lucas/PycharmProjects/Data/EMRAI/dev_other/wavs/*'
+  num_target_tracks: 20
+  verification_path: '/home/lucas/PycharmProjects/MetricEmbeddingNet/temp_files/with_vad/'
+  verification_length: 3
+  rttm_path: '/home/lucas/PycharmProjects/Data/EMRAI/dev_other/rttm/'
+  window_length: [3]
+  step_length: [0.6]
+  collar: 0.250
