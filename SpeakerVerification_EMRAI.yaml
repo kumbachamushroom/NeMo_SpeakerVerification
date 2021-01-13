@@ -1,6 +1,6 @@
 audio:
   target_path: '/home/lucas/PycharmProjects/Data/EMRAI/dev_other/wavs/*'
-  num_target_tracks: 20
+  num_target_tracks: 3
   verification_path: '/home/lucas/PycharmProjects/MetricEmbeddingNet/temp_files/with_vad/'
   verification_length: 3
   rttm_path: '/home/lucas/PycharmProjects/Data/EMRAI/dev_other/rttm/'

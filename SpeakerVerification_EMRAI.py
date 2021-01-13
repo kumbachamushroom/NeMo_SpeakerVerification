@@ -3,6 +3,9 @@ import glob
 import json
 import warnings
 import torch
+import pandas as pd
+import numpy as np
+from math import floor
 
 import pytorch_lightning as pl
 from omegaconf.listconfig import ListConfig
@@ -10,6 +13,7 @@ from omegaconf import DictConfig
 from omegaconf import OmegaConf
 from pytorch_lightning import seed_everything
 import hydra
+from nemo.collections.asr.models.label_models import ExtractSpeakerEmbeddingsModel
 
 import nemo
 import nemo.collections.asr as nemo_asr
@@ -60,40 +64,61 @@ def compute_steps(frame_length, overlap, audio_path):
     '''
 
 
-def write_target_manifest(audio_path, length, manifest_file):
+def write_target_manifest(audio_path, length, manifest_file, agent):
     if os.path.exists(os.path.join(os.getcwd(), 'manifest_files', manifest_file)):
         os.remove(os.path.join(os.getcwd(), 'manifest_files', manifest_file))
-    with open(manifest_file, 'w') as outfile:
-        meta = {"audio_filepath":audio_path, "duration":length}
-        json.dump(meta, outfile)
+    with open(os.path.join(os.getcwd(), 'manifest_files', manifest_file), 'a') as outfile:
+        meta = {"audio_filepath":audio_path, "duration":10, "label":'agent'}
+        json_str = json.dumps(meta)
+        outfile.write(json_str)
         outfile.write("\n")
-    return OmegaConf.create(dict(
-        manifest_filepath = os.path.join(os.getcwd(),'manifest_files',manifest_file),
-        sample_rate = 16000,
-        labels = None,
-        batch_size = 1,
-        shuffle = False,
-        time_length = length,
-        embedding_dir = os.path.join(os.getcwd(),'embeddings')
-    ))
+    print("Created target-speaker manifest file...")
+
+# def write_track_manifest():
+
+def get_embedding_from_pickle(emb_pckl, target):
+    '''
+    This function unpickles the pickle object returned by the SpeakerNet Embedding and returns the desired embedding
+    :param emb_pckl: serialized key-pair dict object
+    :param target: name of target_embedding -> path@to@directory
+    :return: 512-dimensional embedding -> numpy array
+    '''
+    
 
 
+seed_everything(42)
 
 @hydra.main(config_path='SpeakerVerification_EMRAI.yaml')
 def main(cfg: DictConfig) -> None:
-    print(cfg.pretty())
+    os.chdir('/home/lucas/PycharmProjects/NeMo_SpeakerVerification')
     cuda = 1 if torch.cuda.is_available() else 0
-    SpeakerNet_verification = nemo_asr.models.EncDecSpeakerLabelModel.from_pretrained(model_name="SpeakerNet_verification")
+    model = ExtractSpeakerEmbeddingsModel.from_pretrained(model_name='SpeakerNet_verification')
+    #SpeakerNet_verification = nemo_asr.models.EncDecSpeakerLabelModel.from_pretrained(model_name="SpeakerNet_verification")
     audio_tracks = glob.glob(cfg.audio.target_path, recursive=True)[:cfg.audio.num_target_tracks]
     for track in audio_tracks:
         agent=track[track.find('-')+1:track.find('.')]
         agent_samples = glob.glob(cfg.audio.verification_path+agent+'.wav', recursive=True)
         if len(agent_samples) > 0:
-            SpeakerNet_verification.setup_test_data(write_target_manifest(audio_path=agent_samples[0], length=cfg.audio.verification_length, manifest_file='target.json'))
-            trainer = pl.Trainer(gpus=cuda, accelerator=None)
-            trainer.test(SpeakerNet_verification)
+            write_target_manifest(audio_path=agent_samples[0], length=cfg.audio.verification_length, manifest_file='target_test.json',agent=agent)
+            #SpeakerNet_verification.setup_test_data(write_target_manifest(audio_path=agent_samples[0], length=cfg.audio.verification_length, manifest_file='target.json',agent=agent))
+            #trainer = pl.Trainer(gpus=cuda, accelerator=None)
+            #trainer.test(SpeakerNet_verification)
         else:
             warnings.warn('Verification audio for {} not found '.format(agent))
+    test_config = OmegaConf.create(dict(
+        manifest_filepath = os.path.join(os.getcwd(), 'manifest_files', 'target_test.json'),
+        sample_rate = 16000,
+        labels = None,
+        batch_size = 1,
+        shuffle=False,
+        time_length = 3,
+        embedding_dir=os.path.join(os.getcwd(),'embeddings')
+    ))
+    model.setup_test_data(test_config)
+    trainer = pl.Trainer(gpus=cuda)
+    trainer.test(model)
+    for track in audio_tracks:
+
 
 
 if __name__ == '__main__':
