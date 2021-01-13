@@ -74,15 +74,27 @@ def write_target_manifest(audio_path, length, manifest_file, agent):
         outfile.write("\n")
     print("Created target-speaker manifest file...")
 
-# def write_track_manifest():
 
-def get_embedding_from_pickle(emb_pckl, target):
-    '''
-    This function unpickles the pickle object returned by the SpeakerNet Embedding and returns the desired embedding
-    :param emb_pckl: serialized key-pair dict object
-    :param target: name of target_embedding -> path@to@directory
-    :return: 512-dimensional embedding -> numpy array
-    '''
+def write_track_manifest(audio_path, frame_list, manifest_file):
+    if os.path.exists(os.path.join(os.getcwd(), 'manifest_files', manifest_file)):
+        os.remove(os.path.join(os.getcwd(), 'manifest_files', manifest_file))
+    with open(os.path.join(os.getcwd(), 'manifest_files', manifest_file), 'a') as outfile:
+        for i in range(len(frame_list)):
+            start, stop = round(frame_list[i][0],1), round(frame_list[i][1],1)
+            meta = {"audio_filepath":audio_path, "offset":start, "duration":stop, "label":'agent'}
+            json_str = json.dumps(meta)
+            outfile.write(json_str)
+            outfile.write('\n')
+
+
+
+##def get_embedding_from_pickle(emb_pckl, target):
+#    '''
+#    This function unpickles the pickle object returned by the SpeakerNet Embedding and returns the desired embedding
+#    :param emb_pckl: serialized key-pair dict object
+#    :param target: name of target_embedding -> path@to@directory
+#    :return: 512-dimensional embedding -> numpy array
+#    '''
     
 
 
@@ -117,7 +129,25 @@ def main(cfg: DictConfig) -> None:
     model.setup_test_data(test_config)
     trainer = pl.Trainer(gpus=cuda)
     trainer.test(model)
-    for track in audio_tracks:
+    for window_length in cfg.audio.window_length:
+        for step_length in cfg.audio.step_length:
+            for track in audio_tracks:
+                label_path = track[track.rfind('/')+1:track.find('.wav')]+'.labs'
+                frame_list, speaker_df = label_frames(label_path=os.path.join(cfg.audio.label_path, label_path),
+                                                      window_size=window_length,
+                                                      step_size=float(window_length*step_length))
+                write_track_manifest(audio_path=track, frame_list=frame_list, manifest_file='track_manifest.json')
+                test_config = OmegaConf.create(dict(
+                    manifest_filepath = os.path.join(os.getcwd(), 'manifest_files', 'track_manifest.json'),
+                    sample_rate = 16000,
+                    labels = None,
+                    batch_size = 1,
+                    shuffle = False,
+                    embedding_dir = os.path.join(os.getcwd(),'embeddings')
+                ))
+                model.setup_test_data(test_config)
+                trainer = pl.Trainer(gpus=cuda)
+                trainer.test(model)
 
 
 
