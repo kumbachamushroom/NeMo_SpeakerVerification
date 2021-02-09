@@ -1,0 +1,12 @@
+embeddings/
+lightning_logs/
+manifest_files/
+outputs/
+saved_plots/
+tmp/
+venv/
+sentencepiece-0.1.91-cp37-cp37m-manylinux1_x86_64.whl
+target.json
+target_embeddings.pkl
+target_test_embeddings.pkl
+track_manifest_embeddings.pkl

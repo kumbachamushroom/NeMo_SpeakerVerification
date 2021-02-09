@@ -1,10 +1,10 @@
 audio:
   target_path: '/home/lucas/PycharmProjects/Data/EMRAI/dev_other/wavs/*'
-  num_target_tracks: 3
+  num_target_tracks: 4
   label_path: '/home/lucas/PycharmProjects/Data/EMRAI/dev_other/framelabs'
   verification_path: '/home/lucas/PycharmProjects/MetricEmbeddingNet/temp_files/with_vad/'
   verification_length: 3
   rttm_path: '/home/lucas/PycharmProjects/Data/EMRAI/dev_other/rttm/'
-  window_length: [3]
-  step_length: [0.6]
+  window_length: [1]
+  step_length: [1]
   collar: 0.250

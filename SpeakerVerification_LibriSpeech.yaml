@@ -1,0 +1,4 @@
+audio:
+  path: '/home/lucas/PycharmProjects/MetricEmbeddingnet/temp_files/with_vad/*'
+  emb_length: 4
+  num_speaker: 20

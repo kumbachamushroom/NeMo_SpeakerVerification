@@ -1,0 +1,8 @@
+Looking in links: https://download.pytorch.org/whl/torch_stable.html
+Collecting torchaudio
+  Downloading https://files.pythonhosted.org/packages/37/16/ecdb9eb09ec6b8133d6c9536ea9e49cd13c9b5873c8488b8b765a39028da/torchaudio-0.7.2-cp37-cp37m-manylinux1_x86_64.whl (7.6MB)
+Requirement already satisfied: torch==1.7.1 in ./venv/lib/python3.7/site-packages (from torchaudio) (1.7.1)
+Requirement already satisfied: typing-extensions in ./venv/lib/python3.7/site-packages (from torch==1.7.1->torchaudio) (3.7.4.3)
+Requirement already satisfied: numpy in ./venv/lib/python3.7/site-packages (from torch==1.7.1->torchaudio) (1.19.5)
+Installing collected packages: torchaudio
+Successfully installed torchaudio-0.7.2
