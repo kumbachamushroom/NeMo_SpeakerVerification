@@ -1,0 +1,5 @@
+audio:
+  input_dir: '/home/lucas/PycharmProjects/Data/EMRAI/dev_other/wav49s/*'
+  num_tracks: 4
+  label_dir: '/home/lucas/PycharmProjects/Data/EMRAI/dev_other/framelabs/'
+  manifest_path: '/home/lucas/PycharmProjects/NeMo_SpeakerVerification/manifest_files/EMRAI_wav49.json'
